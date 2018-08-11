@@ -37,7 +37,8 @@ namespace ThermoRawFileParser.Writer
         {
             _rawFile = rawFile;
             List<PScan> pScans = new List<PScan>();
-            WritePScans(rawFile.FileName, rawFile, pScans);
+            var fileName = Path.GetFileNameWithoutExtension(rawFile.FileName);
+            WritePScans(fileName, rawFile, pScans);
 
         }
 
@@ -84,13 +85,13 @@ namespace ThermoRawFileParser.Writer
 
                 if (msOrder == MSOrderType.Ms)
                 {
-                    var pscan = GetPScan(scanStats, centroidStream, fileName, Convert.ToInt32(chargeState));
+                    var pscan = GetPScan(scanStats, centroidStream, 1, fileName, Convert.ToInt32(chargeState));
                     scans.Add(pscan);
                 }
                 if (msOrder == MSOrderType.Ms2)
                 {
                     var precursorMz = raw.GetScanEventForScanNumber(scanNumber).GetReaction(0).PrecursorMass;
-                    var pscan = GetPScan(scanStats, centroidStream, fileName, precursorMz, Convert.ToInt32(chargeState));
+                    var pscan = GetPScan(scanStats, centroidStream, 2, fileName, precursorMz, Convert.ToInt32(chargeState));
                     scans.Add(pscan);
                 }
 
@@ -100,7 +101,7 @@ namespace ThermoRawFileParser.Writer
             WriteScans(scans, fileName);
 
         }
-        private static PScan GetPScan(ScanStatistics scanStats, CentroidStream centroidStream,
+        private static PScan GetPScan(ScanStatistics scanStats, CentroidStream centroidStream,int msOrder,
             string fileName, double? precursorMz = null, int? precursorCharge = null)
         {
             var scan = new PScan
@@ -117,10 +118,10 @@ namespace ThermoRawFileParser.Writer
                 LowMass = scanStats.LowMass,
                 HighMass = scanStats.HighMass,
                 TIC = scanStats.TIC,
-                FileId = fileName,
+                FileId = fileName + ".raw",
                 PrecursorMz = precursorMz,
                 PrecursorCharge = precursorCharge,
-                MsOrder = 1
+                MsOrder = msOrder
             };
             return scan;
         }
